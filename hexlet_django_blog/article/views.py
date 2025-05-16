@@ -1,13 +1,14 @@
-from django.http import HttpResponse
 from django.shortcuts import render
+from django.views import View
 
 
-def index(request):
-    title = 'Django project'
-    return render(
-        request,
-        'articles/index.html',
-        context={
-            'title': title,
-        },
-    )
+class IndexView(View):
+    def get(self, request, tags, article_id, *args, **kwargs):
+        return render(
+            request,
+            'articles/index.html',
+            context={
+                'id': article_id,
+                'tag': tags
+            }
+        )
