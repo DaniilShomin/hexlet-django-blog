@@ -6,3 +6,4 @@ __pycashe__/
 .python_version
 .env
 db.sqlite3
+.env
