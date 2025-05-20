@@ -1,14 +1,71 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
+from .forms import CommentArticleForm, ArticleForm
+from .models import ArticleComment
+
+from hexlet_django_blog.article.models import Article
 
 
 class IndexView(View):
-    def get(self, request, tags, article_id, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
+        articles = Article.objects.all()[:15]
         return render(
             request,
-            'articles/index.html',
+            "articles/index.html",
             context={
-                'id': article_id,
-                'tag': tags
+                "articles": articles,
+            },
+        )
+    
+
+class ArticleView(View):
+    def get(self, request, *args, **kwargs):
+        article = get_object_or_404(Article, pk=kwargs['id'])
+        return render(
+            request,
+            "articles/show.html",
+            context={
+                "article": article,
             }
+        )
+    
+
+class CommentArticleView(View):
+    # если метод POST, то мы обрабатываем данные
+    def post(self, request, *args, **kwargs):
+        form = CommentArticleForm(request.POST)  # Получаем данные формы из запроса
+        if form.is_valid():  # Проверяем данные формы на корректность
+            comment = ArticleComment(
+                content=form.cleaned_data[
+                    "content"
+                ],  # Получаем очищенные данные из поля content
+            )  #  и создаем новый комментарий
+            comment.save()
+
+    # если метод GET, то создаем пустую форму
+    def get(self, request, *args, **kwargs):
+        form = CommentArticleForm()  # Создаем экземпляр нашей формы
+        return render(
+            request, "comment.html", {"form": form}
+        )  # Передаем нашу форму в контексте
+    
+
+class ArticleFormCreateView(View):
+    def get(self, request, *args, **kwargs):
+        form = ArticleForm()
+        return render(
+            request,
+            "articles/create.html",
+            {"form": form}
+        )
+    
+    def post(self, request, *args, **kwargs):
+        form = ArticleForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('articles')
+        return render(
+            request,
+            "articles/create.html",
+            {"form": form}
         )
